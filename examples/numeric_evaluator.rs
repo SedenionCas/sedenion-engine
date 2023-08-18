@@ -15,8 +15,8 @@ fn main() -> Result<()> {
             break;
         }
 
-        let result = evaluate(&expression)?;
-        println!("= {}", result);
+        let result = evaluate(&expression);
+        println!("= {:?}", result);
     }
 
     Ok(())
