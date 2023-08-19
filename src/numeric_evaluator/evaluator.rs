@@ -1,7 +1,7 @@
 use anyhow::{bail, Result};
 
 use crate::error::EvaluatorError;
-use crate::math::{deg_to_rad, round};
+use crate::math::{deg_to_rad, rad_to_deg, round};
 use crate::parser::{parse, Expr, Op};
 
 fn evaluate_expr(expr: Expr) -> Result<f64> {
@@ -33,6 +33,26 @@ fn evaluate_expr(expr: Expr) -> Result<f64> {
                 assert_eq!(args.len(), 1);
                 let arg = args.iter().next().unwrap().to_owned();
                 Ok(deg_to_rad(evaluate_expr(*arg)?).tan())
+            }
+            "arccos" => {
+                assert_eq!(args.len(), 1);
+                let arg = args.iter().next().unwrap().to_owned();
+                Ok(rad_to_deg(evaluate_expr(*arg)?.acos()))
+            }
+            "arcsin" => {
+                assert_eq!(args.len(), 1);
+                let arg = args.iter().next().unwrap().to_owned();
+                Ok(rad_to_deg(evaluate_expr(*arg)?.asin()))
+            }
+            "arctan" => {
+                assert_eq!(args.len(), 1);
+                let arg = args.iter().next().unwrap().to_owned();
+                Ok(rad_to_deg(evaluate_expr(*arg)?.atan()))
+            }
+            "abs" => {
+                assert_eq!(args.len(), 1);
+                let arg = args.iter().next().unwrap().to_owned();
+                Ok(evaluate_expr(*arg)?.abs())
             }
             "floor" => {
                 assert_eq!(args.len(), 1);
@@ -85,7 +105,15 @@ fn evaluate_expr(expr: Expr) -> Result<f64> {
                 let arg2 = args.next().unwrap().to_owned();
                 Ok(evaluate_expr(*arg1)?.max(evaluate_expr(*arg2)?))
             }
-            name => bail!("Syntax error: no function name found"),
+            "avg" => {  
+                let len = args.len() as f64;
+                let sum = args
+                    .iter()
+                    .fold(0.0, |acc, n| acc + evaluate_expr(*n.to_owned()).unwrap());
+
+                Ok(sum / len)
+            }
+            name => bail!("Syntax error: no function name '{name}' found"),
         },
         _ => todo!(),
     }
