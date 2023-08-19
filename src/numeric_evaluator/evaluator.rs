@@ -16,6 +16,7 @@ fn evaluate_expr(expr: Expr) -> Result<f64> {
             Op::Equals => bail!(EvaluatorError::EqualityInEval),
         },
         Expr::Number(val) => Ok(val),
+        Expr::Constant { value, .. } => Ok(value),
         Expr::UnaryMinus(op) => Ok(-1.0 * evaluate_expr(*op)?),
         Expr::Function { name, args } => match name.as_str() {
             "cos" => {
