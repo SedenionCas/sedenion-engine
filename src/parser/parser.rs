@@ -4,6 +4,7 @@ use pest::Parser;
 use pest::{iterators::Pairs, pratt_parser::Assoc};
 
 use crate::error::ParserError;
+use crate::math::CONSTANTS_DATABASE;
 
 use super::{Expr, Op};
 
@@ -86,6 +87,15 @@ fn parse_expr(pairs: Pairs<Rule>) -> Result<Expr> {
             Rule::expr => parse_expr(primary.into_inner()),
             Rule::function => parse_function(primary.into_inner()),
             Rule::monomial => parse_monomial(primary.into_inner()),
+            Rule::constant => {
+                let name = primary.as_str().to_string();
+                let value = *match CONSTANTS_DATABASE.get(&name) {
+                    Some(val) => val,
+                    None => bail!(ParserError::UnknownConstant(name.to_string())),
+                };
+
+                Ok(Expr::Constant { name, value })
+            }
             rule => bail!(ParserError::InvalidToken(format!("{:?}", rule))),
         })
         .map_infix(|lhs, op, rhs| {

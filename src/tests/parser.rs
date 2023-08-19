@@ -107,4 +107,12 @@ mod test {
     fn can_parse_equations() {
         assert_eq!("((1+1)=(4-2))", setup_equation("1+1=4-2"))
     }
+
+    #[test]
+    fn can_parse_constants() {
+        assert_eq!("pi", setup_basic("pi"));
+        assert_eq!("tau", setup_basic("tau"));
+        assert_eq!("phi", setup_basic("phi"));
+        assert_eq!("e", setup_basic("e"));
+    }
 }

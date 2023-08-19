@@ -96,4 +96,12 @@ mod test {
             evaluate("7 + max(2, min(47.94, trunc(22.54)))").unwrap()
         );
     }
+
+    #[test]
+    fn can_parse_constants() {
+        assert_eq!(3.141592653589793, evaluate("pi").unwrap());
+        assert_eq!(6.283185307179586, evaluate("tau").unwrap());
+        assert_eq!(1.618033988749895, evaluate("phi").unwrap());
+        assert_eq!(2.718281828459045, evaluate("e").unwrap());
+    }
 }

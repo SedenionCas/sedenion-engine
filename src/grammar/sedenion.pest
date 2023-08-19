@@ -3,7 +3,7 @@ number = @{ ASCII_DIGIT+ ~ ("." ~ ASCII_DIGIT+)? }
 
 unary_minus =  { "-" }
 primary     = _{ number | "(" ~ expr ~ ")" }
-atom        = _{ monomial | unary_minus? ~ primary | function }
+atom        = _{ monomial | unary_minus? ~ primary | function | constant }
 
 function_name = @{ ASCII_ALPHA+ }
 function_args =  { expr ~ ("," ~ expr)* }
@@ -14,7 +14,9 @@ coefficient =  { number }
 exponent    =  { power ~ number }
 monomial    =  { coefficient? ~ variable ~ exponent? }
 
-bin_op   = _{ add | subtract | multiply | divide | modulo | power | equals}
+constant = @{ ASCII_ALPHA_LOWER+ }
+
+bin_op   = _{ add | subtract | multiply | divide | modulo | power | equals }
 add      =  { "+" }
 subtract =  { "-" }
 multiply =  { "*" }

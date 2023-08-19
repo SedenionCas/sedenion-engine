@@ -1,6 +1,5 @@
 use thiserror::Error;
 
-
 #[derive(Debug, Error)]
 pub enum ParserError {
     #[error("Syntax error: no name found for function (this should not happen)")]
@@ -13,6 +12,8 @@ pub enum ParserError {
     InvalidToken(String),
     #[error("Syntax error: invalid operator '{0}'")]
     InvalidOperator(String),
+    #[error("Syntax error: unknown constant '{0}'")]
+    UnknownConstant(String),
 }
 
 #[derive(Debug, Error)]
@@ -22,8 +23,5 @@ pub enum EvaluatorError {
     #[error("Error while parsing: {0}")]
     ParseFailure(ParserError),
     #[error("Equality found in evaluator")]
-    EqualityInEval
+    EqualityInEval,
 }
-
-
-
