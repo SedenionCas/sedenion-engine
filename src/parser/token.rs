@@ -16,6 +16,10 @@ pub enum Expr {
         variable: String,
         exponent: f64,
     },
+    Constant {
+        name: String,
+        value: f64,
+    },
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -33,7 +37,7 @@ pub trait Optimize {
     fn optimize_expression(self) -> Expr;
     fn optimize_node(&self) -> Expr;
     fn optimize_equation(self) -> Expr;
-} 
+}
 
 impl ToString for Expr {
     fn to_string(&self) -> String {
@@ -69,6 +73,7 @@ impl ToString for Expr {
                 variable,
                 exponent,
             } => out.push_str(&format!("{coefficient}{variable}^({exponent})")),
+            Expr::Constant { name, .. } => out.push_str(&name),
         }
         return out;
     }
