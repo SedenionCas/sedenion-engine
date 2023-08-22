@@ -1,4 +1,3 @@
-
 #[cfg(test)]
 mod test {
     use crate::parser::{parse, parse_equation};

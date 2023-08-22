@@ -1,4 +1,4 @@
-mod parser;
-mod optimizer;
-mod round;
 mod evaluator;
+mod optimizer;
+mod parser;
+mod round;
