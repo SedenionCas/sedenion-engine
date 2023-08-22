@@ -1,0 +1,45 @@
+name: Rust Tests and Codecov
+
+on:
+  push:
+    branches:
+      - main # Change this to your default branch name if different
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Rust Tests and Codecov
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+
+      - name: Set up Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+
+      - name: Cache Rust dependencies
+        uses: actions/cache@v2
+        with:
+          path: ~/.cargo
+          key: rust-deps-${{ hashFiles('**/Cargo.toml') }}
+          restore-keys: |
+            rust-deps-
+
+      - name: Install Dependencies
+        run: cargo build --verbose
+
+      - name: Install Tarpaulin
+        run: cargo install cargo-tarpaulin
+
+      - name: Run Tests with Tarpaulin
+        run: cargo tarpaulin --verbose --out Xml
+        if: success()
+
+      - name: Upload Coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }} # Add your Codecov token as a secret
