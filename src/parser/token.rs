@@ -1,3 +1,5 @@
+use std::fmt::format;
+
 #[derive(Debug, Clone, PartialEq)]
 pub enum Expr {
     Number(f64),
@@ -39,6 +41,118 @@ pub trait Optimize {
     fn optimize_equation(self) -> Expr;
 }
 
+impl Expr {
+    pub fn as_latex(&self) -> String {
+        match self {
+            Expr::Number(num) => num.to_string(),
+            Expr::UnaryMinus(inner) => format!("-{}", inner.as_latex()),
+            Expr::BinOp { lhs, op, rhs } => {
+                format!("{}{}{}", lhs.as_latex(), op.to_string(), rhs.as_latex())
+            }
+            Expr::Function { name, args } => {
+                let args = args
+                    .iter()
+                    .map(|arg| arg.as_latex())
+                    .collect::<Vec<String>>()
+                    .join(", ");
+
+                format!("{}({})", name, args)
+            }
+            Expr::Monomial {
+                coefficient,
+                variable,
+                exponent,
+            } => {
+                let mut coefficient = coefficient.to_string();
+                if coefficient == "1.0" {
+                    coefficient = String::new();
+                }
+
+                let mut exponent = format!("^{{{}}}", exponent);
+                if exponent == "^{1.0}" {
+                    exponent = String::new();
+                }
+
+                format!("{}{}{}", coefficient, variable, exponent)
+            }
+            Expr::Constant { name, .. } => name.to_owned(),
+        }
+    }
+
+    pub fn print_expr(&self, indent: usize) {
+        match self {
+            Expr::Number(num) => println!("{:indent$}Number: {}", "", num, indent = indent),
+            Expr::UnaryMinus(expr) => {
+                println!("{:indent$}UnaryMinus", "", indent = indent);
+                expr.print_expr(indent + 2);
+            }
+            Expr::BinOp { lhs, op, rhs } => {
+                println!("{:indent$}BinOp: {:?}", "", op, indent = indent);
+                lhs.print_expr(indent + 2);
+                rhs.print_expr(indent + 2);
+            }
+            Expr::Function { name, args } => {
+                println!("{:indent$}Function: {}", "", name, indent = indent);
+                for arg in args {
+                    arg.print_expr(indent + 2);
+                }
+            }
+            Expr::Monomial {
+                coefficient,
+                variable,
+                exponent,
+            } => println!(
+                "{:indent$}Monomial: {} {}^{}",
+                "",
+                coefficient,
+                variable,
+                exponent,
+                indent = indent
+            ),
+            Expr::Constant { name, .. } => println!(
+                "{:indent$}Constant: {}",
+                "",
+                name,
+                indent = indent
+            ),
+        }
+    }
+}
+
+impl Op {
+    pub fn get_precedence(&self) -> Option<u8> {
+        match self {
+            Op::Add | Op::Subtract => Some(1),
+            Op::Multiply | Op::Divide | Op::Modulo => Some(2),
+            Op::Power => Some(3),
+            Op::Equals => None,
+        }
+    }
+}
+
+impl Expr {
+    pub fn get_bin_op(self) -> Option<(Expr, Op, Expr)> {
+        match self {
+            Expr::BinOp { lhs, op, rhs } => Some((*lhs, op, *rhs)),
+            _ => None,
+        }
+    }
+}
+
+impl ToString for Op {
+    fn to_string(&self) -> String {
+        String::from(match self {
+            Op::Add => '+',
+            Op::Subtract => '-',
+            Op::Multiply => '*',
+            Op::Divide => '/',
+            Op::Modulo => '%',
+            Op::Power => '^',
+            Op::Equals => '=',
+        })
+    }
+}
+
 impl ToString for Expr {
     fn to_string(&self) -> String {
         let mut out = String::new();
@@ -48,15 +162,7 @@ impl ToString for Expr {
             Expr::BinOp { lhs, op, rhs } => {
                 let lhs = lhs.to_string();
                 let rhs = rhs.to_string();
-                let op = match op {
-                    Op::Add => '+',
-                    Op::Subtract => '-',
-                    Op::Multiply => '*',
-                    Op::Divide => '/',
-                    Op::Modulo => '%',
-                    Op::Power => '^',
-                    Op::Equals => '=',
-                };
+                let op = op.to_string();
 
                 out.push_str(&format!("({lhs}{op}{rhs})"));
             }

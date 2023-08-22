@@ -1,4 +1,7 @@
+use parser::parse;
 use wasm_bindgen::prelude::*;
+#[macro_use]
+extern crate log;
 
 mod error;
 mod math;
@@ -15,4 +18,14 @@ pub fn evaluate(expression: &str) -> Result<f64, String> {
         Ok(val) => Ok(val),
         Err(err) => Err(err.to_string()),
     }
+}
+
+#[wasm_bindgen]
+pub fn optimize(expression: &str) -> Result<String, String> {
+    let parsed = match parse(expression) {
+        Ok(val) => Ok(val),
+        Err(err) => Err(err.to_string()),
+    }?;
+    let optimized = parsed.optimize_expression(String::from("X")).as_latex();
+    Ok(optimized)
 }

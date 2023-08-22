@@ -1,13 +1,41 @@
 #[cfg(test)]
 mod test {
-    use crate::parser::{parse, Optimize};
+    use crate::parser::{parse, parse_equation};
+    use std::sync::Once;
+
+    static INIT: Once = Once::new();
 
     fn setup_single(expression: &str) -> String {
-        parse(expression).unwrap().optimize_node().to_string()
+        INIT.call_once(|| {
+            pretty_env_logger::init();
+        });
+
+        parse(expression)
+            .unwrap()
+            .optimize_node(String::new())
+            .to_string()
     }
 
     fn setup_multi(expression: &str) -> String {
-        parse(expression).unwrap().optimize_expression().to_string()
+        INIT.call_once(|| {
+            pretty_env_logger::init();
+        });
+
+        parse(expression)
+            .unwrap()
+            .optimize_expression(String::new())
+            .to_string()
+    }
+
+    fn setup_equation(expression: &str, target: &str) -> String {
+        INIT.call_once(|| {
+            pretty_env_logger::init();
+        });
+
+        parse_equation(expression)
+            .unwrap()
+            .optimize_equation(target.to_string())
+            .to_string()
     }
 
     #[test]
@@ -34,13 +62,11 @@ mod test {
 
     #[test]
     fn can_optimize_zero_subtraction() {
-        assert_eq!("645", setup_single("0-645"));
         assert_eq!("645", setup_single("645-0"));
     }
 
     #[test]
     fn can_optimize_zero_subtraction_in_expression() {
-        assert_eq!("(55*645)", setup_single("55*(0-645)"));
         assert_eq!("(24*645)", setup_single("24*645-0"));
     }
 
@@ -135,5 +161,32 @@ mod test {
     fn can_optimize_monomial_multiply() {
         assert_eq!("12X^(10)", setup_single("2X^8*6X^2"));
         assert_eq!("1X^(2)", setup_single("X*X"));
+    }
+
+    #[test]
+    fn can_optimize_equation_per_side() {
+        assert_eq!("(1X^(2)=2X^(1))", setup_equation("X*X=X+X", "X"));
+    }
+
+    #[test]
+    fn can_optimize_equation_cross_equal_sign() {
+        assert_eq!("(1Y^(1)=0)", setup_equation("X+Y=X", "Y"));
+        assert_eq!("(1Y^(1)=-(1X^(1)))", setup_equation("X+Y+X=X", "Y"));
+    }
+
+    #[test]
+    fn can_optimize_cross_equal_sign_negative() {
+        assert_eq!("(1Y^(1)=-(1X^(1)))", setup_equation("X-Y-X=X", "Y"));
+    }
+
+    #[test]
+    fn can_optimize_hoisting() {
+        assert_eq!("(1Y^(1)=1X^(1))", setup_equation("Y-X+X=X", "Y"));
+        assert_eq!("(1Y^(1)=4X^(1))", setup_equation("-(3X)-4Y=5X-6Y", "Y"));
+    }
+
+    #[test]
+    fn can_optimize_mixed() {
+        assert_eq!("(4X^(3)+(2*3))", setup_multi("2*(2X^3+3)"))
     }
 }
