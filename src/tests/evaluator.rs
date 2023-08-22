@@ -99,6 +99,15 @@ mod test {
             29.0,
             setup("7 + max(2, min(47.94, trunc(22.54)))")
         );
+
+        assert_eq!(60.00000000000001, setup("arccos(0.5)"));
+        assert_eq!(30.00000000000001, setup("arcsin(0.5)"));
+        assert_eq!(45.0, setup("arctan(1)"));
+
+        assert_eq!(4.0, setup("abs(-4)"));
+        assert_eq!(3.0, setup("abs(3)"));
+
+        assert_eq!(3.0, setup("avg(1, 2, 3, 4, 5)"))
     }
 
     #[test]
