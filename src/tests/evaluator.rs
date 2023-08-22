@@ -95,10 +95,7 @@ mod test {
 
         assert_eq!(6.0, setup("max(1, 2) + 4"));
         assert_eq!(8.0, setup("4 + min(5, 4)"));
-        assert_eq!(
-            29.0,
-            setup("7 + max(2, min(47.94, trunc(22.54)))")
-        );
+        assert_eq!(29.0, setup("7 + max(2, min(47.94, trunc(22.54)))"));
 
         assert_eq!(60.00000000000001, setup("arccos(0.5)"));
         assert_eq!(30.00000000000001, setup("arcsin(0.5)"));

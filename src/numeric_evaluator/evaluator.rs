@@ -105,7 +105,7 @@ fn evaluate_expr(expr: Expr) -> Result<f64> {
                 let arg2 = args.next().unwrap().to_owned();
                 Ok(evaluate_expr(*arg1)?.max(evaluate_expr(*arg2)?))
             }
-            "avg" => {  
+            "avg" => {
                 let len = args.len() as f64;
                 let sum = args
                     .iter()
