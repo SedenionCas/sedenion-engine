@@ -1,7 +1,11 @@
 [package]
 edition = "2021"
 name = "sedenion_engine"
+<<<<<<< HEAD
 version = "0.2.0-beta"
+=======
+version = "0.1.5-beta"
+>>>>>>> 7fd63ac (chore: bump beta version)
 repository = "https://github.com/SedenionCas/sedenion-engine"
 license = "GNU GPLv3"
 license-file = "LICENSE"
