@@ -1,5 +1,5 @@
 #![allow(clippy::approx_constant)]
-use parser::{parse, parse_equation};
+use parser::parse;
 use wasm_bindgen::prelude::*;
 #[macro_use]
 extern crate log;
