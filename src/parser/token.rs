@@ -66,15 +66,17 @@ impl Expr {
                 variable,
                 exponent,
             } => {
-                let mut coefficient = coefficient.to_string();
-                if coefficient == "1.0" {
-                    coefficient = String::new();
-                }
+                let coefficient = if coefficient == &1.0 {
+                    String::new()
+                } else {
+                    coefficient.to_string()
+                };
 
-                let mut exponent = format!("^{{{}}}", exponent);
-                if exponent == "^{1.0}" {
-                    exponent = String::new();
-                }
+                let exponent = if exponent == &1.0 {
+                    String::new()
+                } else {
+                    exponent.to_string()
+                };
 
                 format!("{}{}{}", coefficient, variable, exponent)
             }
