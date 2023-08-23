@@ -46,9 +46,12 @@ impl Expr {
         match self {
             Expr::Number(num) => num.to_string(),
             Expr::UnaryMinus(inner) => format!("-{}", inner.as_latex()),
-            Expr::BinOp { lhs, op, rhs } => {
-                format!("{}{}{}", lhs.as_latex(), op.to_string(), rhs.as_latex())
-            }
+            Expr::BinOp { lhs, op, rhs } => match op {
+                Op::Power => format!("^{{{}}}", rhs.as_latex()),
+                Op::Divide => format!("\\frac{{{}}}{{{}}}", lhs.as_latex(), rhs.as_latex()),
+                Op::Multiply => format!("{}\\cdot{}", lhs.as_latex(), rhs.as_latex()),
+                _ => format!("{}{}{}", lhs.as_latex(), op.to_string(), rhs.as_latex()),
+            },
             Expr::Function { name, args } => {
                 let args = args
                     .iter()
@@ -109,12 +112,9 @@ impl Expr {
                 exponent,
                 indent = indent
             ),
-            Expr::Constant { name, .. } => println!(
-                "{:indent$}Constant: {}",
-                "",
-                name,
-                indent = indent
-            ),
+            Expr::Constant { name, .. } => {
+                println!("{:indent$}Constant: {}", "", name, indent = indent)
+            }
         }
     }
 }
