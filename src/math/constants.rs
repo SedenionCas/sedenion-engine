@@ -6,5 +6,5 @@ pub static CONSTANTS_DATABASE: phf::Map<&'static str, f64> = phf_map! {
     "pi" => PI,
     "tau" => TAU,
     "e" => E,
-    "phi" => 1.61803398874989484820,
+    "phi" => 1.618_033_988_749_895,
 };

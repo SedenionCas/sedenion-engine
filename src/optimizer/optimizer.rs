@@ -51,11 +51,7 @@ fn distribute_monomials(lhs: Expr, op: Op, rhs: Expr, target: String) -> Expr {
                 op: left_op,
                 rhs: left_rhs,
             },
-            Expr::Monomial {
-                coefficient: right_coefficient,
-                variable: right_variable,
-                exponent: right_exponent,
-            },
+            Expr::Monomial { .. },
         ) => {
             if left_op.get_precedence() == op.get_precedence() {
                 // I am so sorry for the variable names...
@@ -70,7 +66,7 @@ fn distribute_monomials(lhs: Expr, op: Op, rhs: Expr, target: String) -> Expr {
                         return Expr::BinOp {
                             lhs: Box::new(Expr::BinOp {
                                 lhs: left_lhs,
-                                op: op,
+                                op,
                                 rhs: Box::new(rhs),
                             }),
                             op: left_op,
@@ -98,7 +94,7 @@ fn distribute_monomials(lhs: Expr, op: Op, rhs: Expr, target: String) -> Expr {
                                 op: left_op,
                                 rhs: left_rhs,
                             }),
-                            op: op,
+                            op,
                             rhs: left_lhs,
                         };
                     }
@@ -407,7 +403,7 @@ impl Expr {
                     }
                     operator => todo!("{operator:?}"),
                 }
-                distribute_monomials(optimized_lhs, op, optimized_rhs, target.clone())
+                distribute_monomials(optimized_lhs, op, optimized_rhs, target)
             }
             Expr::Monomial {
                 coefficient,
@@ -428,8 +424,8 @@ impl Expr {
                     trace!("Applying unary to coefficient");
                     return Expr::UnaryMinus(Box::new(Expr::Monomial {
                         coefficient: coefficient.abs(),
-                        variable: variable,
-                        exponent: exponent,
+                        variable,
+                        exponent,
                     }));
                 }
 
@@ -462,247 +458,248 @@ impl Expr {
     }
 
     fn apply_equation_rule(self, target: String) -> Expr {
-        if let Expr::BinOp { lhs, op, rhs } = self.clone() {
-            if let Op::Equals = op {
-                let lhs = *lhs;
-                let rhs = *rhs;
+        if let Expr::BinOp {
+            lhs,
+            op: Op::Equals,
+            rhs,
+        } = self.clone()
+        {
+            let lhs = *lhs;
+            let rhs = *rhs;
 
-                // ======== addition ========
+            // ======== addition ========
 
-                // T + a = b => T = b - a
-                if let Expr::BinOp {
-                    lhs: left_lhs,
-                    op: Op::Add,
-                    rhs: left_rhs,
-                } = lhs.clone()
-                {
-                    if let Expr::Monomial { variable, .. } = *left_lhs.clone() {
-                        if variable == target {
-                            trace!("T+a = b => T = b-a");
-                            return Expr::BinOp {
-                                lhs: left_lhs.clone(),
-                                op: Op::Equals,
-                                rhs: Box::new(Expr::BinOp {
-                                    lhs: Box::new(rhs.clone()),
-                                    op: Op::Subtract,
-                                    rhs: left_rhs.clone(),
-                                }),
-                            };
-                        }
-                    }
-                }
-
-                // a + T = b => T = b - a
-                if let Expr::BinOp {
-                    lhs: left_lhs,
-                    op: Op::Add,
-                    rhs: left_rhs,
-                } = lhs.clone()
-                {
-                    if let Expr::Monomial { variable, .. } = *left_rhs.clone() {
-                        if variable == target {
-                            trace!("a+T = b => T = b-a");
-                            return Expr::BinOp {
-                                lhs: left_rhs.clone(),
-                                op: Op::Equals,
-                                rhs: Box::new(Expr::BinOp {
-                                    lhs: Box::new(rhs.clone()),
-                                    op: Op::Subtract,
-                                    rhs: left_lhs.clone(),
-                                }),
-                            };
-                        }
-                    }
-                }
-
-                if let Expr::BinOp {
-                    lhs: right_lhs,
-                    op: Op::Add,
-                    rhs: right_rhs,
-                } = rhs.clone()
-                {
-                    debug!("{}", self.to_string());
-                    if let Expr::Monomial { variable, .. } = *right_lhs.clone() {
-                        if variable == target {
-                            trace!("a = T+b => a-T = b");
-                            return Expr::BinOp {
-                                lhs: Box::new(Expr::BinOp {
-                                    lhs: Box::new(lhs.clone()),
-                                    op: Op::Subtract,
-                                    rhs: right_rhs,
-                                }),
-                                op: Op::Equals,
-                                rhs: right_lhs,
-                            };
-                        }
-                    }
-                }
-
-                // a = b + T => a - T = b
-                if let Expr::BinOp {
-                    lhs: right_lhs,
-                    op: Op::Add,
-                    rhs: right_rhs,
-                } = rhs.clone()
-                {
-                    if let Expr::Monomial { variable, .. } = *right_rhs.clone() {
-                        if variable == target {
-                            trace!("a = b+T => a-T = b");
-                            return Expr::BinOp {
-                                lhs: Box::new(Expr::BinOp {
-                                    lhs: Box::new(lhs.clone()),
-                                    op: Op::Subtract,
-                                    rhs: right_rhs,
-                                }),
-                                op: Op::Equals,
-                                rhs: right_lhs,
-                            };
-                        }
-                    }
-                }
-
-                // ======== subtraction ========
-                // T - a = b => T = b + a
-                if let Expr::BinOp {
-                    lhs: left_lhs,
-                    op: Op::Subtract,
-                    rhs: left_rhs,
-                } = lhs.clone()
-                {
-                    if let Expr::Monomial { variable, .. } = *left_lhs.clone() {
-                        if variable == target {
-                            trace!("T-a = b => T = b+a");
-                            return Expr::BinOp {
-                                lhs: left_lhs.clone(),
-                                op: Op::Equals,
-                                rhs: Box::new(Expr::BinOp {
-                                    lhs: Box::new(rhs.clone()),
-                                    op: Op::Add,
-                                    rhs: left_rhs.clone(),
-                                }),
-                            };
-                        }
-                    }
-                }
-
-                // a - T = b => T = -b + a
-                if let Expr::BinOp {
-                    lhs: left_lhs,
-                    op: Op::Subtract,
-                    rhs: left_rhs,
-                } = lhs.clone()
-                {
-                    if let Expr::Monomial { variable, .. } = *left_rhs.clone() {
-                        if variable == target {
-                            trace!("a-T = b => T = -b+a");
-                            return Expr::BinOp {
-                                lhs: left_rhs.clone(),
-                                op: Op::Equals,
-                                rhs: Box::new(Expr::BinOp {
-                                    lhs: Box::new(Expr::UnaryMinus(Box::new(rhs.clone()))),
-                                    op: Op::Add,
-                                    rhs: left_lhs.clone(),
-                                }),
-                            };
-                        }
-                    }
-                }
-
-                // a = T - b => a - T = - b
-                if let Expr::BinOp {
-                    lhs: right_lhs,
-                    op: Op::Subtract,
-                    rhs: right_rhs,
-                } = rhs.clone()
-                {
-                    if let Expr::Monomial { variable, .. } = *right_lhs.clone() {
-                        if variable == target {
-                            trace!("a = T-b => a-T = -b");
-                            return Expr::BinOp {
-                                lhs: Box::new(Expr::BinOp {
-                                    lhs: Box::new(lhs.clone()),
-                                    op: Op::Subtract,
-                                    rhs: right_lhs,
-                                }),
-                                op: Op::Equals,
-                                rhs: Box::new(Expr::UnaryMinus(right_rhs)),
-                            };
-                        }
-                    }
-                }
-
-                // a = b - T => a + T = b
-                if let Expr::BinOp {
-                    lhs: right_lhs,
-                    op: Op::Subtract,
-                    rhs: right_rhs,
-                } = rhs.clone()
-                {
-                    if let Expr::Monomial { variable, .. } = *right_rhs.clone() {
-                        if variable == target {
-                            trace!("a = b-T => T = -a+b");
-                            return Expr::BinOp {
-                                lhs: Box::new(Expr::BinOp {
-                                    lhs: Box::new(lhs.clone()),
-                                    op: Op::Add,
-                                    rhs: right_rhs,
-                                }),
-                                op: Op::Equals,
-                                rhs: right_lhs,
-                            };
-                        }
-                    }
-                }
-
-                // ======== unary ========
-
-                // -(T) = a => T = -(a)
-                if let Expr::UnaryMinus(inner) = lhs.clone() {
-                    if let Expr::Monomial { variable, .. } = *inner.clone() {
-                        if variable == target {
-                            trace!("-(T) = a => T = -(a)");
-                            return Expr::BinOp {
-                                lhs: inner,
-                                op: Op::Equals,
-                                rhs: Box::new(Expr::UnaryMinus(Box::new(rhs.clone()))),
-                            };
-                        }
-                    }
-                }
-
-                // ======== monomial ========
-                // reduce coefficient
-                if let Expr::Monomial {
-                    coefficient,
-                    variable,
-                    exponent,
-                } = lhs.clone()
-                {
-                    trace!("Reducing coefficient");
+            // T + a = b => T = b - a
+            if let Expr::BinOp {
+                lhs: left_lhs,
+                op: Op::Add,
+                rhs: left_rhs,
+            } = lhs.clone()
+            {
+                if let Expr::Monomial { variable, .. } = *left_lhs.clone() {
                     if variable == target {
+                        trace!("T+a = b => T = b-a");
                         return Expr::BinOp {
-                            lhs: Box::new(Expr::Monomial {
-                                coefficient: 1.0,
-                                variable,
-                                exponent,
-                            }),
+                            lhs: left_lhs,
                             op: Op::Equals,
                             rhs: Box::new(Expr::BinOp {
                                 lhs: Box::new(rhs),
-                                op: Op::Divide,
-                                rhs: Box::new(Expr::Number(coefficient)),
+                                op: Op::Subtract,
+                                rhs: left_rhs,
                             }),
                         };
                     }
                 }
+            }
 
-                return Expr::BinOp {
-                    lhs: Box::new(lhs),
-                    op: Op::Equals,
-                    rhs: Box::new(rhs),
-                };
-            } else {
-                panic!("Not an equation!");
+            // a + T = b => T = b - a
+            if let Expr::BinOp {
+                lhs: left_lhs,
+                op: Op::Add,
+                rhs: left_rhs,
+            } = lhs.clone()
+            {
+                if let Expr::Monomial { variable, .. } = *left_rhs.clone() {
+                    if variable == target {
+                        trace!("a+T = b => T = b-a");
+                        return Expr::BinOp {
+                            lhs: left_rhs,
+                            op: Op::Equals,
+                            rhs: Box::new(Expr::BinOp {
+                                lhs: Box::new(rhs),
+                                op: Op::Subtract,
+                                rhs: left_lhs,
+                            }),
+                        };
+                    }
+                }
+            }
+
+            if let Expr::BinOp {
+                lhs: right_lhs,
+                op: Op::Add,
+                rhs: right_rhs,
+            } = rhs.clone()
+            {
+                debug!("{}", self.to_string());
+                if let Expr::Monomial { variable, .. } = *right_lhs.clone() {
+                    if variable == target {
+                        trace!("a = T+b => a-T = b");
+                        return Expr::BinOp {
+                            lhs: Box::new(Expr::BinOp {
+                                lhs: Box::new(lhs),
+                                op: Op::Subtract,
+                                rhs: right_rhs,
+                            }),
+                            op: Op::Equals,
+                            rhs: right_lhs,
+                        };
+                    }
+                }
+            }
+
+            // a = b + T => a - T = b
+            if let Expr::BinOp {
+                lhs: right_lhs,
+                op: Op::Add,
+                rhs: right_rhs,
+            } = rhs.clone()
+            {
+                if let Expr::Monomial { variable, .. } = *right_rhs.clone() {
+                    if variable == target {
+                        trace!("a = b+T => a-T = b");
+                        return Expr::BinOp {
+                            lhs: Box::new(Expr::BinOp {
+                                lhs: Box::new(lhs),
+                                op: Op::Subtract,
+                                rhs: right_rhs,
+                            }),
+                            op: Op::Equals,
+                            rhs: right_lhs,
+                        };
+                    }
+                }
+            }
+
+            // ======== subtraction ========
+            // T - a = b => T = b + a
+            if let Expr::BinOp {
+                lhs: left_lhs,
+                op: Op::Subtract,
+                rhs: left_rhs,
+            } = lhs.clone()
+            {
+                if let Expr::Monomial { variable, .. } = *left_lhs.clone() {
+                    if variable == target {
+                        trace!("T-a = b => T = b+a");
+                        return Expr::BinOp {
+                            lhs: left_lhs,
+                            op: Op::Equals,
+                            rhs: Box::new(Expr::BinOp {
+                                lhs: Box::new(rhs),
+                                op: Op::Add,
+                                rhs: left_rhs,
+                            }),
+                        };
+                    }
+                }
+            }
+
+            // a - T = b => T = -b + a
+            if let Expr::BinOp {
+                lhs: left_lhs,
+                op: Op::Subtract,
+                rhs: left_rhs,
+            } = lhs.clone()
+            {
+                if let Expr::Monomial { variable, .. } = *left_rhs.clone() {
+                    if variable == target {
+                        trace!("a-T = b => T = -b+a");
+                        return Expr::BinOp {
+                            lhs: left_rhs,
+                            op: Op::Equals,
+                            rhs: Box::new(Expr::BinOp {
+                                lhs: Box::new(Expr::UnaryMinus(Box::new(rhs))),
+                                op: Op::Add,
+                                rhs: left_lhs,
+                            }),
+                        };
+                    }
+                }
+            }
+
+            // a = T - b => a - T = - b
+            if let Expr::BinOp {
+                lhs: right_lhs,
+                op: Op::Subtract,
+                rhs: right_rhs,
+            } = rhs.clone()
+            {
+                if let Expr::Monomial { variable, .. } = *right_lhs.clone() {
+                    if variable == target {
+                        trace!("a = T-b => a-T = -b");
+                        return Expr::BinOp {
+                            lhs: Box::new(Expr::BinOp {
+                                lhs: Box::new(lhs),
+                                op: Op::Subtract,
+                                rhs: right_lhs,
+                            }),
+                            op: Op::Equals,
+                            rhs: Box::new(Expr::UnaryMinus(right_rhs)),
+                        };
+                    }
+                }
+            }
+
+            // a = b - T => a + T = b
+            if let Expr::BinOp {
+                lhs: right_lhs,
+                op: Op::Subtract,
+                rhs: right_rhs,
+            } = rhs.clone()
+            {
+                if let Expr::Monomial { variable, .. } = *right_rhs.clone() {
+                    if variable == target {
+                        trace!("a = b-T => T = -a+b");
+                        return Expr::BinOp {
+                            lhs: Box::new(Expr::BinOp {
+                                lhs: Box::new(lhs),
+                                op: Op::Add,
+                                rhs: right_rhs,
+                            }),
+                            op: Op::Equals,
+                            rhs: right_lhs,
+                        };
+                    }
+                }
+            }
+
+            // ======== unary ========
+
+            // -(T) = a => T = -(a)
+            if let Expr::UnaryMinus(inner) = lhs.clone() {
+                if let Expr::Monomial { variable, .. } = *inner.clone() {
+                    if variable == target {
+                        trace!("-(T) = a => T = -(a)");
+                        return Expr::BinOp {
+                            lhs: inner,
+                            op: Op::Equals,
+                            rhs: Box::new(Expr::UnaryMinus(Box::new(rhs))),
+                        };
+                    }
+                }
+            }
+
+            // ======== monomial ========
+            // reduce coefficient
+            if let Expr::Monomial {
+                coefficient,
+                variable,
+                exponent,
+            } = lhs.clone()
+            {
+                trace!("Reducing coefficient");
+                if variable == target {
+                    return Expr::BinOp {
+                        lhs: Box::new(Expr::Monomial {
+                            coefficient: 1.0,
+                            variable,
+                            exponent,
+                        }),
+                        op: Op::Equals,
+                        rhs: Box::new(Expr::BinOp {
+                            lhs: Box::new(rhs),
+                            op: Op::Divide,
+                            rhs: Box::new(Expr::Number(coefficient)),
+                        }),
+                    };
+                }
+            }
+
+            Expr::BinOp {
+                lhs: Box::new(lhs),
+                op: Op::Equals,
+                rhs: Box::new(rhs),
             }
         } else {
             panic!("Not an equation!");
@@ -710,31 +707,32 @@ impl Expr {
     }
 
     pub fn optimize_equation(self, target: String) -> Expr {
-        if let Expr::BinOp { lhs, op, rhs } = self.clone() {
-            if let Op::Equals = op {
-                let mut old = Expr::BinOp {
+        if let Expr::BinOp {
+            lhs,
+            op: Op::Equals,
+            rhs,
+        } = self
+        {
+            let mut old = Expr::BinOp {
+                lhs: Box::new(lhs.optimize_expression(target.clone())),
+                op: Op::Equals,
+                rhs: Box::new(rhs.optimize_expression(target.clone())),
+            };
+
+            loop {
+                let expression = old.clone().apply_equation_rule(target.clone());
+                let (lhs, op, rhs) = expression.get_bin_op().unwrap();
+                let expression = Expr::BinOp {
                     lhs: Box::new(lhs.optimize_expression(target.clone())),
                     op: Op::Equals,
                     rhs: Box::new(rhs.optimize_expression(target.clone())),
                 };
 
-                loop {
-                    let expression = old.clone().apply_equation_rule(target.clone());
-                    let (lhs, op, rhs) = expression.get_bin_op().unwrap();
-                    let expression = Expr::BinOp {
-                        lhs: Box::new(lhs.optimize_expression(target.clone())),
-                        op: Op::Equals,
-                        rhs: Box::new(rhs.optimize_expression(target.clone())),
-                    };
-
-                    if expression == old {
-                        return expression;
-                    } else {
-                        old = expression;
-                    }
+                if expression == old {
+                    return expression;
+                } else {
+                    old = expression;
                 }
-            } else {
-                panic!("Not an equation!");
             }
         } else {
             panic!("Not an equation!");

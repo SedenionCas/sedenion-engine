@@ -1,5 +1,3 @@
-use std::fmt::format;
-
 #[derive(Debug, Clone, PartialEq)]
 pub enum Expr {
     Number(f64),
@@ -11,7 +9,7 @@ pub enum Expr {
     },
     Function {
         name: String,
-        args: Vec<Box<Expr>>,
+        args: Vec<Expr>,
     },
     Monomial {
         coefficient: f64,
@@ -170,7 +168,7 @@ impl ToString for Expr {
             }
             Expr::Function { name, args } => {
                 let args = args
-                    .into_iter()
+                    .iter()
                     .map(|arg| arg.to_string())
                     .collect::<Vec<String>>()
                     .join(", ");
@@ -181,8 +179,8 @@ impl ToString for Expr {
                 variable,
                 exponent,
             } => out.push_str(&format!("{coefficient}{variable}^({exponent})")),
-            Expr::Constant { name, .. } => out.push_str(&name),
+            Expr::Constant { name, .. } => out.push_str(name),
         }
-        return out;
+        out
     }
 }

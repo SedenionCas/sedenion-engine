@@ -1,7 +1,7 @@
 use anyhow::{bail, Result};
+use pest::iterators::Pairs;
 use pest::pratt_parser::PrattParser;
 use pest::Parser;
-use pest::{iterators::Pairs, pratt_parser::Assoc};
 
 use crate::error::ParserError;
 use crate::math::CONSTANTS_DATABASE;
@@ -29,7 +29,7 @@ lazy_static::lazy_static! {
 
 fn parse_function(pairs: Pairs<Rule>) -> Result<Expr> {
     let mut name = String::new();
-    let mut args: Vec<Box<Expr>> = Vec::new();
+    let mut args: Vec<Expr> = Vec::new();
 
     for pair in pairs {
         match pair.as_rule() {
@@ -38,7 +38,7 @@ fn parse_function(pairs: Pairs<Rule>) -> Result<Expr> {
                 args = pair
                     .into_inner()
                     .map(|arg| parse_expr(arg.into_inner()))
-                    .map(|arg| Box::new(arg.unwrap()))
+                    .map(|arg| arg.unwrap())
                     .collect()
             }
             rule => {
@@ -47,7 +47,7 @@ fn parse_function(pairs: Pairs<Rule>) -> Result<Expr> {
         }
     }
 
-    if name != "" {
+    if name.is_empty() {
         Ok(Expr::Function { name, args })
     } else {
         bail!(ParserError::NoFunctionName)
@@ -63,7 +63,7 @@ fn parse_monomial(pairs: Pairs<Rule>) -> Result<Expr> {
             Rule::coefficient => coefficient = Some(pair.as_str().parse::<f64>()?),
             Rule::variable => variable = Some(pair.as_str().to_string()),
             Rule::exponent => {
-                let pair = match pair.as_str().strip_prefix("^") {
+                let pair = match pair.as_str().strip_prefix('^') {
                     Some(val) => val,
                     None => bail!(ParserError::InvalidToken(format!("{:?}", pair.as_str()))),
                 };
@@ -128,11 +128,11 @@ pub fn parse(expression: &str) -> Result<Expr> {
 }
 
 pub fn parse_equation(expression: &str) -> Result<Expr> {
-    if !expression.contains("=") {
+    if !expression.contains('=') {
         bail!(ParserError::NoEquals);
     }
 
-    let expression: Vec<&str> = expression.split("=").collect();
+    let expression: Vec<&str> = expression.split('=').collect();
     if expression.len() != 2 {
         bail!(ParserError::EqualsCount);
     }
