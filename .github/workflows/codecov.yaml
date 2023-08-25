@@ -1,31 +1,35 @@
-name: CI
+name: Rust Tests and Codecov
 
-on: [push, pull_request, ]
+on:
+  push:
+    branches:
+      - main # Change this to your default branch name if different
+  pull_request:
+  workflow_dispatch:
 
 jobs:
-  coverage:
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-latest]
-
-    name: Test Action on ${{ matrix.os }}
-    runs-on: ${{ matrix.os }}
+  build:
+    name: Rust Tests and Codecov
+    runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
+      - name: Checkout Repository
+        uses: actions/checkout@v2
 
-      - uses: actions-rs/toolchain@v1
+      - name: Set up Rust
+        uses: actions/setup-rust@v2
         with:
-          profile: minimal
-          toolchain: nightly
-          components: llvm-tools-preview
-          override: true
+          rust-version: 1.72.0 
 
-      - uses: Swatinem/rust-cache@v1
-      
-      - uses: codecov/codecov-action@v1
-        env:
-          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+      - name: Install Dependencies
+        run: cargo build --verbose
+
+      - name: Run Tests with Tarpaulin
+        run: cargo tarpaulin --verbose --out Xml
+        if: success()
+
+      - name: Upload Coverage to Codecov
+        uses: codecov/codecov-action@v2
         with:
-          directory: coverage
+          token: ${{ secrets.CODECOV_TOKEN }} # Add your Codecov token as a secret
+
