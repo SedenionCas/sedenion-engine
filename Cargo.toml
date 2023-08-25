@@ -18,6 +18,3 @@ thiserror = "1.0.44"
 anyhow = "1.0.72"
 wasm-bindgen = "0.2.87"
 phf = { version = "0.11.2", features = ["macros"] }
-
-[dev-dependencies]
-cargo-tarpaulin = "0.26.1"
