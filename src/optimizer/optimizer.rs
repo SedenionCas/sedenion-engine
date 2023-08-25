@@ -131,7 +131,6 @@ impl Expr {
 
     pub fn merge_numbers(&self) -> Result<Expr> {
         match self {
-            Expr::UnaryMinus(_) => todo!(),
             Expr::BinOp { lhs, op, rhs } => {
                 let merged_lhs = lhs.merge_numbers()?;
                 let merged_rhs = rhs.merge_numbers()?;
