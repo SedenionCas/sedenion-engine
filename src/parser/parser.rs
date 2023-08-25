@@ -30,6 +30,7 @@ lazy_static::lazy_static! {
 fn parse_function(pairs: Pairs<Rule>) -> Result<Expr> {
     let mut name = String::new();
     let mut args: Vec<Expr> = Vec::new();
+    println!("{:#?}", pairs);
 
     for pair in pairs {
         match pair.as_rule() {
@@ -47,7 +48,7 @@ fn parse_function(pairs: Pairs<Rule>) -> Result<Expr> {
         }
     }
 
-    if name.is_empty() {
+    if !name.is_empty() {
         Ok(Expr::Function { name, args })
     } else {
         bail!(ParserError::NoFunctionName)
