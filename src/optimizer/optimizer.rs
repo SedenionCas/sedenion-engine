@@ -118,7 +118,7 @@ fn distribute_monomials(lhs: Expr, op: Op, rhs: Expr, target: String) -> Expr {
 impl Expr {
     pub fn optimize_expression(self, target: String) -> Expr {
         let mut old = self.clone();
-        let mut latest = self.optimize_node(target.clone());
+        let mut latest = self.optimize_node(target.clone()).merge_numbers().unwrap();
 
         while old != latest {
             trace!("New cycle started...");
@@ -759,9 +759,9 @@ impl Expr {
         } = self
         {
             let mut old = Expr::BinOp {
-                lhs: Box::new(lhs.optimize_expression(target.clone())),
+                lhs: Box::new(lhs.optimize_expression(target.clone()).merge_numbers().unwrap()),
                 op: Op::Equals,
-                rhs: Box::new(rhs.optimize_expression(target.clone())),
+                rhs: Box::new(rhs.optimize_expression(target.clone()).merge_numbers().unwrap()),
             };
 
             loop {
