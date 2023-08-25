@@ -1,6 +1,10 @@
+use anyhow::{bail, Result};
 use log::trace;
 
-use crate::parser::{Expr, Op};
+use crate::{
+    error::EvaluatorError,
+    parser::{Expr, Op},
+};
 
 fn distribute_monomials(lhs: Expr, op: Op, rhs: Expr, target: String) -> Expr {
     match (lhs.clone(), rhs.clone()) {
@@ -123,6 +127,48 @@ impl Expr {
         }
 
         latest
+    }
+
+    pub fn merge_numbers(&self) -> Result<Expr> {
+        match self {
+            Expr::UnaryMinus(_) => todo!(),
+            Expr::BinOp { lhs, op, rhs } => {
+                let merged_lhs = lhs.merge_numbers()?;
+                let merged_rhs = rhs.merge_numbers()?;
+
+                if let (Expr::Number(n_lhs), Expr::Number(n_rhs)) =
+                    (merged_lhs.clone(), merged_rhs.clone())
+                {
+                    let res = match *op {
+                        Op::Add => n_lhs + n_rhs,
+                        Op::Subtract => n_lhs - n_rhs,
+                        Op::Multiply => n_lhs * n_rhs,
+                        Op::Divide => n_lhs / n_rhs,
+                        Op::Modulo => n_lhs % n_rhs,
+                        Op::Power => n_lhs.powf(n_rhs),
+                        Op::Equals => bail!(EvaluatorError::EqualityInEval),
+                    };
+
+                    if res.fract() == 0.0 {
+                        return Ok(Expr::Number(res));
+                    } else {
+                        return Ok(Expr::BinOp {
+                            lhs: Box::new(merged_lhs),
+                            op: *op,
+                            rhs: Box::new(merged_rhs),
+                        });
+                    }
+                }
+
+                Ok(Expr::BinOp {
+                    lhs: Box::new(merged_lhs),
+                    op: *op,
+                    rhs: Box::new(merged_rhs),
+                })
+            }
+            Expr::Function { name, args } => todo!(),
+            _ => Ok(self.clone()),
+        }
     }
 
     pub fn optimize_node(&self, target: String) -> Expr {
