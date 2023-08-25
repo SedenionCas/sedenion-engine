@@ -1,6 +1,7 @@
 # Sedenion Engine
 ![npm](https://img.shields.io/npm/v/sedenion_engine)
 ![GitHub](https://img.shields.io/github/license/SedenionCas/sedenion-engine)
+[![codecov](https://codecov.io/gh/SedenionCas/sedenion-engine/graph/badge.svg?token=6SIKVQCIAQ)](https://codecov.io/gh/SedenionCas/sedenion-engine)
 
 Sedenion Engine is an open-source project that offers a scientific calculator and CAS (Computer Algebra System) solver. This repository contains the Rust source code used by Sedenion to parse and evaluate expressions.
 
