@@ -24,6 +24,9 @@ jobs:
       - name: Install Dependencies
         run: cargo build --verbose
 
+      - name: Install Tarpaulin
+        run: cargo install cargo-tarpaulin
+
       - name: Run Tests with Tarpaulin
         run: cargo tarpaulin --verbose --out Xml
         if: success()
