@@ -25,7 +25,7 @@ jobs:
         uses: actions/cache@v2
         with:
           path: ~/.cargo
-          key: rust-deps-${{ hashFiles('**/Cargo.lock') }}
+          key: rust-deps-${{ hashFiles('**/Cargo.toml') }}
           restore-keys: |
             rust-deps-
 
