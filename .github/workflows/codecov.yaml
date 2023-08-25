@@ -1,12 +1,33 @@
-name: Rust CI
+name: CI
 
-on: [push, workflow_dispatch]
+on: [push, pull_request, ]
 
 jobs:
-  build:
-    name: Build and Test
-    runs-on: ubuntu-latest
+  coverage:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest]
+
+    name: Test Action on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
 
     steps:
-      - name: Rust Codecov
-        uses: maboesanman/rust-codecov@v0
+      - uses: actions/checkout@v2
+
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: nightly
+          components: llvm-tools-preview
+          override: true
+
+      - uses: Swatinem/rust-cache@v1
+      
+      - uses: ./
+
+      - uses: codecov/codecov-action@v1
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+        with:
+          directory: coverage
