@@ -165,7 +165,7 @@ impl Expr {
                     rhs: Box::new(merged_rhs),
                 })
             }
-            Expr::Function { name, args } => todo!(),
+            Expr::Function { .. } => todo!(),
             _ => Ok(self.clone()),
         }
     }
@@ -761,12 +761,12 @@ impl Expr {
             let mut old = Expr::BinOp {
                 lhs: Box::new(lhs.optimize_expression(target.clone()).merge_numbers().unwrap()),
                 op: Op::Equals,
-                rhs: Box::new(rhs.optimize_expression(target.clone()).merge_numbers().unwrap()),
+                rhs: Box::new(rhs.optimize_expression(target.clone())),
             };
 
             loop {
                 let expression = old.clone().apply_equation_rule(target.clone());
-                let (lhs, op, rhs) = expression.get_bin_op().unwrap();
+                let (lhs, _op, rhs) = expression.get_bin_op().unwrap();
                 let expression = Expr::BinOp {
                     lhs: Box::new(lhs.optimize_expression(target.clone())),
                     op: Op::Equals,
