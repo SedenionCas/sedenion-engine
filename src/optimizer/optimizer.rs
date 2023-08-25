@@ -759,7 +759,11 @@ impl Expr {
         } = self
         {
             let mut old = Expr::BinOp {
-                lhs: Box::new(lhs.optimize_expression(target.clone()).merge_numbers().unwrap()),
+                lhs: Box::new(
+                    lhs.optimize_expression(target.clone())
+                        .merge_numbers()
+                        .unwrap(),
+                ),
                 op: Op::Equals,
                 rhs: Box::new(rhs.optimize_expression(target.clone())),
             };

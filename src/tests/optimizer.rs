@@ -211,5 +211,4 @@ mod test {
     fn dont_merge_with_fraction() {
         assert_eq!("((3/2)*1X^(1))", setup_merge("(1.5+1.5)/2*X"));
     }
-    
 }
