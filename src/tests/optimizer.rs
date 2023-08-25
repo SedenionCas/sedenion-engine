@@ -16,6 +16,18 @@ mod test {
             .to_string()
     }
 
+    fn setup_merge(expression: &str) -> String {
+        INIT.call_once(|| {
+            pretty_env_logger::init();
+        });
+
+        parse(expression)
+            .unwrap()
+            .merge_numbers()
+            .unwrap()
+            .to_string()
+    }
+
     fn setup_multi(expression: &str) -> String {
         INIT.call_once(|| {
             pretty_env_logger::init();
@@ -189,4 +201,15 @@ mod test {
     fn can_optimize_mixed() {
         assert_eq!("(4X^(3)+(2*3))", setup_multi("2*(2X^3+3)"))
     }
+
+    #[test]
+    fn can_merge_simple() {
+        assert_eq!("(1*1X^(1))", setup_merge("(1+1)/2*X"));
+    }
+
+    #[test]
+    fn dont_merge_with_fraction() {
+        assert_eq!("((3/2)*1X^(1))", setup_merge("(1.5+1.5)/2*X"));
+    }
+    
 }
