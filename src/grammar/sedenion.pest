@@ -2,18 +2,18 @@ number = @{ ASCII_DIGIT+ ~ ("." ~ ASCII_DIGIT+)? }
 
 unary_minus =  { "-" }
 primary     = _{ number | "(" ~ expr ~ ")" }
-atom        = _{ monomial | unary_minus? ~ primary | function | constant }
+atom        = _{ constant | function | monomial | unary_minus? ~ primary }
 
 function_name = @{ ASCII_ALPHA+ }
 function_args =  { expr ~ ("," ~ expr)* }
 function      =  { function_name ~ "(" ~ function_args ~ ")" }
 
-variable    = @{ ASCII_ALPHA_UPPER }
+variable    = @{ ASCII_ALPHA_LOWER }
 coefficient =  { number }
 exponent    =  { power ~ number }
 monomial    =  { coefficient? ~ variable ~ exponent? }
 
-constant = @{ ASCII_ALPHA_LOWER+ }
+constant = @{ ASCII_ALPHA_UPPER+ }
 
 bin_op   = _{ add | subtract | multiply | divide | modulo | power | equals }
 add      =  { "+" }
