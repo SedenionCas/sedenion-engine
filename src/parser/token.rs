@@ -73,7 +73,7 @@ impl Expr {
                 let exponent = if exponent == &1.0 {
                     String::new()
                 } else {
-                    exponent.to_string()
+                    format!("^{{{}}}", exponent)
                 };
 
                 format!("{}{}{}", coefficient, variable, exponent)
