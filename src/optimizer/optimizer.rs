@@ -359,6 +359,39 @@ impl Expr {
                             };
                         }
 
+                        // ======== distributive ========
+                        // a * (b <op> c) = a * b <op> a * c
+                        if let (
+                            expr,
+                            Expr::BinOp {
+                                lhs: right_lhs,
+                                op: right_op,
+                                rhs: right_rhs,
+                            },
+                            Op::Multiply,
+                        ) = (optimized_lhs.clone(), optimized_rhs.clone(), op)
+                        {
+                            match right_op {
+                                Op::Add | Op::Subtract => {
+                                    trace!("a*(b<op>c) = a*b <op> a*c");
+                                    return Expr::BinOp {
+                                        lhs: Box::new(Expr::BinOp {
+                                            lhs: Box::new(expr.clone()),
+                                            op: Op::Multiply,
+                                            rhs: right_lhs,
+                                        }),
+                                        op: right_op,
+                                        rhs: Box::new(Expr::BinOp {
+                                            lhs: Box::new(expr),
+                                            op: Op::Multiply,
+                                            rhs: right_rhs,
+                                        }),
+                                    };
+                                }
+                                _ => {}
+                            }
+                        }
+
                         // ======== monomials ========
                         // a * bX^c = a*bX^c
                         if let (
@@ -371,6 +404,24 @@ impl Expr {
                         ) = (optimized_lhs.clone(), optimized_rhs.clone())
                         {
                             trace!("a*bX^c = (a*b)X^c");
+                            return Expr::Monomial {
+                                coefficient: num * coefficient,
+                                variable,
+                                exponent,
+                            };
+                        }
+
+                        // bX^c * a = a*bX^c
+                        if let (
+                            Expr::Monomial {
+                                coefficient,
+                                variable,
+                                exponent,
+                            },
+                            Expr::Number(num),
+                        ) = (optimized_lhs.clone(), optimized_rhs.clone())
+                        {
+                            trace!("bX^c*a = (a*b)X^c");
                             return Expr::Monomial {
                                 coefficient: num * coefficient,
                                 variable,

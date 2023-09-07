@@ -211,4 +211,11 @@ mod test {
     fn dont_merge_with_fraction() {
         assert_eq!("((3/2)*1x^(1))", setup_merge("(1.5+1.5)/2*x"));
     }
+
+    #[test]
+    fn can_open_parenthesis_14() {
+        assert_eq!("9x^(1)", setup_multi("x*(5+4)"));
+        assert_eq!("((1x^(1)*1y^(1))+(1x^(1)*1z^(1)))", setup_multi("x*(y+z)"));
+        assert_eq!("((1x^(1)*1y^(1))-(1x^(1)*1z^(1)))", setup_multi("x*(y-z)"));
+    }
 }
