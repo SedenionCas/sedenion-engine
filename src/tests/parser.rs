@@ -97,9 +97,9 @@ mod test {
 
     #[test]
     fn can_parse_monomials() {
-        assert_eq!("3X^(2)", setup_basic("3X^2"));
-        assert_eq!("312A^(221)", setup_basic("312A^221"));
-        assert_eq!("1B^(1)", setup_basic("B"));
+        assert_eq!("3x^(2)", setup_basic("3x^2"));
+        assert_eq!("312a^(221)", setup_basic("312a^221"));
+        assert_eq!("1b^(1)", setup_basic("b"));
     }
 
     #[test]
@@ -109,9 +109,9 @@ mod test {
 
     #[test]
     fn can_parse_constants() {
-        assert_eq!("pi", setup_basic("pi"));
-        assert_eq!("tau", setup_basic("tau"));
-        assert_eq!("phi", setup_basic("phi"));
-        assert_eq!("e", setup_basic("e"));
+        assert_eq!("PI", setup_basic("PI"));
+        assert_eq!("TAU", setup_basic("TAU"));
+        assert_eq!("PHI", setup_basic("PHI"));
+        assert_eq!("E", setup_basic("E"));
     }
 }

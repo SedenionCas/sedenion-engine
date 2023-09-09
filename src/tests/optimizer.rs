@@ -165,50 +165,58 @@ mod test {
 
     #[test]
     fn can_optimize_monomial_plus() {
-        assert_eq!("8X^(8)", setup_single("2X^8+6X^8"));
-        assert_eq!("2X^(1)", setup_single("X+X"));
+        assert_eq!("8x^(8)", setup_single("2x^8+6x^8"));
+        assert_eq!("2x^(1)", setup_single("x+x"));
     }
 
     #[test]
     fn can_optimize_monomial_multiply() {
-        assert_eq!("12X^(10)", setup_single("2X^8*6X^2"));
-        assert_eq!("1X^(2)", setup_single("X*X"));
+        assert_eq!("12x^(10)", setup_single("2x^8*6x^2"));
+        assert_eq!("1x^(2)", setup_single("x*x"));
+        assert_eq!("(1x^(1)*1y^(1))", setup_single("x*y"));
     }
 
     #[test]
     fn can_optimize_equation_per_side() {
-        assert_eq!("(1X^(2)=2X^(1))", setup_equation("X*X=X+X", "X"));
+        assert_eq!("(1x^(2)=2x^(1))", setup_equation("x*x=x+x", "x"));
     }
 
     #[test]
     fn can_optimize_equation_cross_equal_sign() {
-        assert_eq!("(1Y^(1)=0)", setup_equation("X+Y=X", "Y"));
-        assert_eq!("(1Y^(1)=-(1X^(1)))", setup_equation("X+Y+X=X", "Y"));
+        assert_eq!("(1y^(1)=0)", setup_equation("x+y=x", "y"));
+        assert_eq!("(1y^(1)=-(1x^(1)))", setup_equation("x+y+x=x", "y"));
     }
 
     #[test]
     fn can_optimize_cross_equal_sign_negative() {
-        assert_eq!("(1Y^(1)=-(1X^(1)))", setup_equation("X-Y-X=X", "Y"));
+        assert_eq!("(1y^(1)=-(1x^(1)))", setup_equation("x-y-x=x", "y"));
     }
 
     #[test]
     fn can_optimize_hoisting() {
-        assert_eq!("(1Y^(1)=1X^(1))", setup_equation("Y-X+X=X", "Y"));
-        assert_eq!("(1Y^(1)=4X^(1))", setup_equation("-(3X)-4Y=5X-6Y", "Y"));
+        assert_eq!("(1y^(1)=1x^(1))", setup_equation("y-x+x=x", "y"));
+        assert_eq!("(1y^(1)=4x^(1))", setup_equation("-(3x)-4y=5x-6y", "y"));
     }
 
     #[test]
     fn can_optimize_mixed() {
-        assert_eq!("(4X^(3)+6)", setup_multi("2*(2X^3+3)"))
+        assert_eq!("(4x^(3)+6)", setup_multi("2*(2x^3+3)"))
     }
 
     #[test]
     fn can_merge_simple() {
-        assert_eq!("(1*1X^(1))", setup_merge("(1+1)/2*X"));
+        assert_eq!("(1*1x^(1))", setup_merge("(1+1)/2*x"));
     }
 
     #[test]
     fn dont_merge_with_fraction() {
-        assert_eq!("((3/2)*1X^(1))", setup_merge("(1.5+1.5)/2*X"));
+        assert_eq!("((3/2)*1x^(1))", setup_merge("(1.5+1.5)/2*x"));
+    }
+
+    #[test]
+    fn can_open_parenthesis_14() {
+        assert_eq!("9x^(1)", setup_multi("x*(5+4)"));
+        assert_eq!("((1x^(1)*1y^(1))+(1x^(1)*1z^(1)))", setup_multi("x*(y+z)"));
+        assert_eq!("((1x^(1)*1y^(1))-(1x^(1)*1z^(1)))", setup_multi("x*(y-z)"));
     }
 }

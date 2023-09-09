@@ -109,9 +109,9 @@ mod test {
 
     #[test]
     fn can_parse_constants() {
-        assert_eq!(3.14159265358979, setup("pi"));
-        assert_eq!(6.28318530717959, setup("tau"));
-        assert_eq!(1.61803398874990, setup("phi"));
-        assert_eq!(2.71828182845905, setup("e"));
+        assert_eq!(3.14159265358979, setup("PI"));
+        assert_eq!(6.28318530717959, setup("TAU"));
+        assert_eq!(1.61803398874990, setup("PHI"));
+        assert_eq!(2.71828182845905, setup("E"));
     }
 }
