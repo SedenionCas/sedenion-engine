@@ -223,6 +223,11 @@ mod test {
     #[test]
     fn can_optimize_exponent_outside_parenthesis() {
         assert_eq!("-(8x^(3))", setup_multi("(-2x)^3"));
-        assert_eq!("(1x^(2)+1y^(2))", setup_multi("(x+y)^2"))
+        assert_eq!("(1x^(2)+1y^(2))", setup_multi("(x+y)^2"));
+    }
+
+    #[test]
+    fn can_optimize_multiply_parenthesis() {
+        assert_eq!("(1y^(2)+4)", setup_multi("(y+2)*(y+2)"));
     }
 }

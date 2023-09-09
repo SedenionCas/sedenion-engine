@@ -123,7 +123,7 @@ impl Expr {
         while old != latest {
             trace!("New cycle started...");
             old = latest.clone();
-            latest = latest.optimize_node(target.clone());
+            latest = latest.optimize_node(target.clone()).merge_numbers().unwrap();
         }
 
         latest
