@@ -47,7 +47,7 @@ impl Expr {
             Expr::BinOp { lhs, op, rhs } => match op {
                 Op::Power => format!("^{{{}}} ", rhs.as_latex()),
                 Op::Divide => format!("\\frac{{{}}}{{{}}} ", lhs.as_latex(), rhs.as_latex()),
-                Op::Multiply => format!("{}\\cdot{} ", lhs.as_latex(), rhs.as_latex()),
+                Op::Multiply => format!("{}\\cdot {}", lhs.as_latex(), rhs.as_latex()),
                 _ => format!("{}{}{}", lhs.as_latex(), op.to_string(), rhs.as_latex()),
             },
             Expr::Function { name, args } => {
