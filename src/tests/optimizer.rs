@@ -173,6 +173,7 @@ mod test {
     fn can_optimize_monomial_multiply() {
         assert_eq!("12x^(10)", setup_single("2x^8*6x^2"));
         assert_eq!("1x^(2)", setup_single("x*x"));
+        assert_eq!("(1x^(1)*1y^(1))", setup_single("x*y"));
     }
 
     #[test]

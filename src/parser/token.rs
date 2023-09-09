@@ -45,9 +45,9 @@ impl Expr {
             Expr::Number(num) => num.to_string(),
             Expr::UnaryMinus(inner) => format!("-{}", inner.as_latex()),
             Expr::BinOp { lhs, op, rhs } => match op {
-                Op::Power => format!("^{{{}}}", rhs.as_latex()),
-                Op::Divide => format!("\\frac{{{}}}{{{}}}", lhs.as_latex(), rhs.as_latex()),
-                Op::Multiply => format!("{}\\cdot{}", lhs.as_latex(), rhs.as_latex()),
+                Op::Power => format!("^{{{}}} ", rhs.as_latex()),
+                Op::Divide => format!("\\frac{{{}}}{{{}}} ", lhs.as_latex(), rhs.as_latex()),
+                Op::Multiply => format!("{}\\cdot{} ", lhs.as_latex(), rhs.as_latex()),
                 _ => format!("{}{}{}", lhs.as_latex(), op.to_string(), rhs.as_latex()),
             },
             Expr::Function { name, args } => {
@@ -55,7 +55,7 @@ impl Expr {
                     .iter()
                     .map(|arg| arg.as_latex())
                     .collect::<Vec<String>>()
-                    .join(", ");
+                    .join(",\\ ");
 
                 format!("{}({})", name, args)
             }
