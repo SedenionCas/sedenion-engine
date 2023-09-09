@@ -343,20 +343,23 @@ impl Expr {
                             },
                         ) = (optimized_lhs.clone(), optimized_rhs.clone())
                         {
-                            trace!("a*(b <op> c) = a*b <op> a*c");
-                            return Expr::BinOp {
-                                lhs: Box::new(Expr::BinOp {
-                                    lhs: Box::new(optimized_lhs.clone()),
-                                    op: Op::Multiply,
-                                    rhs: right_lhs,
-                                }),
-                                op: right_op,
-                                rhs: Box::new(Expr::BinOp {
-                                    lhs: Box::new(optimized_lhs),
-                                    op: Op::Multiply,
-                                    rhs: right_rhs,
-                                }),
-                            };
+                            if op != Op::Power {
+                                trace!("a*(b <op> c) = a*b <op> a*c");
+                                debug!("{}", self.to_string());
+                                return Expr::BinOp {
+                                    lhs: Box::new(Expr::BinOp {
+                                        lhs: Box::new(optimized_lhs.clone()),
+                                        op: Op::Multiply,
+                                        rhs: right_lhs,
+                                    }),
+                                    op: right_op,
+                                    rhs: Box::new(Expr::BinOp {
+                                        lhs: Box::new(optimized_lhs),
+                                        op: Op::Multiply,
+                                        rhs: right_rhs,
+                                    }),
+                                };
+                            }
                         }
 
                         // ======== distributive ========
@@ -495,6 +498,78 @@ impl Expr {
                                     }),
                                 };
                             }
+                        }
+
+                        // ======== distributes ========
+                        // (a <op> b)^c = a^c <op> b^c
+                        if let (
+                            Expr::BinOp {
+                                lhs: left_lhs,
+                                op: left_op,
+                                rhs: left_rhs,
+                            },
+                            Expr::Number(num),
+                        ) = (optimized_lhs.clone(), optimized_rhs.clone())
+                        {
+                            match left_op {
+                                Op::Add | Op::Subtract => {
+                                    trace!("(a<op>b)^c = a^c <op> b^c");
+                                    return Expr::BinOp {
+                                        lhs: Box::new(Expr::BinOp {
+                                            lhs: left_lhs,
+                                            op: Op::Power,
+                                            rhs: Box::new(Expr::Number(num)),
+                                        }),
+                                        op: left_op,
+                                        rhs: Box::new(Expr::BinOp {
+                                            lhs: left_rhs,
+                                            op: Op::Power,
+                                            rhs: Box::new(Expr::Number(num)),
+                                        }),
+                                    };
+                                }
+                                _ => {}
+                            }
+                        }
+
+                        // (-a)^b = (-1)^b * a^b
+                        if let (Expr::UnaryMinus(inner), Expr::Number(num), Op::Power) =
+                            (optimized_lhs.clone(), optimized_rhs.clone(), op)
+                        {
+                            trace!("(-a)^b = (-1)^b * a^b");
+                            debug!("{}", self.to_string());
+                            return Expr::BinOp {
+                                lhs: Box::new(Expr::BinOp {
+                                    lhs: Box::new(Expr::Number(-1.0)),
+                                    op: Op::Power,
+                                    rhs: Box::new(Expr::Number(num)),
+                                }),
+                                op: Op::Multiply,
+                                rhs: Box::new(Expr::BinOp {
+                                    lhs: inner,
+                                    op: Op::Power,
+                                    rhs: Box::new(Expr::Number(num)),
+                                }),
+                            };
+                        }
+
+                        // ======== monomials ========
+                        // (aX^b)^c = a^cX^(b*c)
+                        if let (
+                            Expr::Monomial {
+                                coefficient,
+                                variable,
+                                exponent,
+                            },
+                            Expr::Number(num),
+                        ) = (optimized_lhs.clone(), optimized_rhs.clone())
+                        {
+                            trace!("(aX^b)^c = a^cX^(b*c)");
+                            return Expr::Monomial {
+                                coefficient: coefficient.powf(num),
+                                variable,
+                                exponent: exponent * num,
+                            };
                         }
                     }
                     operator => todo!("{operator:?}"),

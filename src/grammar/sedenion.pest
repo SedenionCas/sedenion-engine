@@ -2,7 +2,7 @@ number = @{ ASCII_DIGIT+ ~ ("." ~ ASCII_DIGIT+)? }
 
 unary_minus =  { "-" }
 primary     = _{ number | "(" ~ expr ~ ")" }
-atom        = _{ constant | function | monomial | unary_minus? ~ primary }
+atom        = _{ constant | function | unary_minus? ~ (monomial | primary) }
 
 function_name = @{ ASCII_ALPHA+ }
 function_args =  { expr ~ ("," ~ expr)* }
