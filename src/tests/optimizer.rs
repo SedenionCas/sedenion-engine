@@ -229,5 +229,6 @@ mod test {
     #[test]
     fn can_optimize_multiply_parenthesis() {
         assert_eq!("(1y^(2)+4)", setup_multi("(y+2)*(y+2)"));
+        assert_eq!("(18x^(2)-8)", setup_multi("(3x+2)*(6x-4)"));
     }
 }
