@@ -123,7 +123,10 @@ impl Expr {
         while old != latest {
             trace!("New cycle started...");
             old = latest.clone();
-            latest = latest.optimize_node(target.clone()).merge_numbers().unwrap();
+            latest = latest
+                .optimize_node(target.clone())
+                .merge_numbers()
+                .unwrap();
         }
 
         latest
@@ -149,6 +152,7 @@ impl Expr {
                     };
 
                     if res.fract() == 0.0 {
+                        trace!("Merging numbers: {n_lhs} {op:?} {n_rhs} = {res}");
                         return Ok(Expr::Number(res));
                     } else {
                         return Ok(Expr::BinOp {
@@ -252,6 +256,18 @@ impl Expr {
                                 rhs: inner,
                             };
                         }
+
+                        // ======== distributes ======== 
+                        // a - b = a + (-b)
+                        if let Expr::UnaryMinus(inner) = optimized_rhs.clone() {
+                            trace!("a-b = a+(-b)");
+                            return Expr::BinOp {
+                                lhs: Box::new(optimized_lhs),
+                                op: Op::Add,
+                                rhs: inner,
+                            };
+                        }
+
                     }
                     Op::Multiply => {
                         // ======== constants ========
@@ -357,6 +373,35 @@ impl Expr {
                                         lhs: Box::new(optimized_lhs),
                                         op: Op::Multiply,
                                         rhs: right_rhs,
+                                    }),
+                                };
+                            }
+                        }
+
+                        // (a <op> b) * c = a * c <op> b * c
+                        if let (
+                            Expr::BinOp {
+                                lhs: left_lhs,
+                                op: left_op,
+                                rhs: left_rhs,
+                            },
+                            Expr::Number(..),
+                        ) = (optimized_lhs.clone(), optimized_rhs.clone())
+                        {
+                            if op != Op::Power {
+                                trace!("(a <op> b) * c = a * c <op> b * c");
+                                debug!("{}", self.to_string());
+                                return Expr::BinOp {
+                                    lhs: Box::new(Expr::BinOp {
+                                        lhs: left_lhs,
+                                        op: Op::Multiply,
+                                        rhs: Box::new(optimized_rhs.clone()),
+                                    }),
+                                    op: left_op,
+                                    rhs: Box::new(Expr::BinOp {
+                                        lhs: left_rhs,
+                                        op: Op::Multiply,
+                                        rhs: Box::new(optimized_rhs),
                                     }),
                                 };
                             }
